@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Processing Demo — StringBuffer &amp; StringTokenizer</title>
+    <meta name="description" content="Interactive demo of Java StringBuffer and StringTokenizer operations">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- SockJS + STOMP for WebSocket -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp-websocket/2.3.4/stomp.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-logo">
+                <span class="logo-icon">🔤</span>
+                <div>
+                    <h1>String Processing Application</h1>
+                    <p class="header-sub">Java StringBuffer &amp; StringTokenizer — Interactive Demo</p>
+                </div>
+            </div>
+            <div class="header-badge" id="connectionBadge">
+                <span class="dot dot-connecting"></span> Connecting…
+            </div>
+        </div>
+    </header>
+
+    <div class="main-grid">
+
+        <!-- ===== LEFT COLUMN ===== -->
+        <aside class="sidebar">
+
+            <!-- Tab Switcher -->
+            <div class="tab-switcher">
+                <button class="tab-btn active" id="tabSB" onclick="switchTab('sb')">
+                    📝 StringBuffer
+                </button>
+                <button class="tab-btn" id="tabST" onclick="switchTab('st')">
+                    ✂️ StringTokenizer
+                </button>
+            </div>
+
+            <!-- ===== STRINGBUFFER PANEL ===== -->
+            <div id="panelSB" class="ops-panel">
+                <div class="panel-title">StringBuffer Operations</div>
+
+                <!-- Common input -->
+                <div class="form-group">
+                    <label for="sbInput">Input String</label>
+                    <input type="text" id="sbInput" class="input-field" placeholder="e.g. Hello World" value="Hello World">
+                </div>
+
+                <!-- Append -->
+                <div class="op-card" id="op-append">
+                    <div class="op-header" onclick="toggleOp('op-append')">
+                        <span class="op-badge sb">append()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Appends text to the end of the StringBuffer.</p>
+                        <div class="form-group">
+                            <label>Text to Append</label>
+                            <input type="text" id="appendValue" class="input-field" placeholder="e.g.  Java" value=" Java">
+                        </div>
+                        <button class="btn btn-sb" onclick="doAppend()">Run append()</button>
+                    </div>
+                </div>
+
+                <!-- Insert -->
+                <div class="op-card" id="op-insert">
+                    <div class="op-header" onclick="toggleOp('op-insert')">
+                        <span class="op-badge sb">insert()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Inserts text at the specified index.</p>
+                        <div class="inline-row">
+                            <div class="form-group">
+                                <label>Index</label>
+                                <input type="number" id="insertIndex" class="input-field" value="5" min="0">
+                            </div>
+                            <div class="form-group flex-grow">
+                                <label>Text to Insert</label>
+                                <input type="text" id="insertValue" class="input-field" placeholder="e.g. !!!" value=" Beautiful">
+                            </div>
+                        </div>
+                        <button class="btn btn-sb" onclick="doInsert()">Run insert()</button>
+                    </div>
+                </div>
+
+                <!-- Delete -->
+                <div class="op-card" id="op-delete">
+                    <div class="op-header" onclick="toggleOp('op-delete')">
+                        <span class="op-badge sb">delete()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Deletes characters from start (inclusive) to end (exclusive).</p>
+                        <div class="inline-row">
+                            <div class="form-group">
+                                <label>Start</label>
+                                <input type="number" id="deleteStart" class="input-field" value="6" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>End</label>
+                                <input type="number" id="deleteEnd" class="input-field" value="11" min="0">
+                            </div>
+                        </div>
+                        <button class="btn btn-sb" onclick="doDelete()">Run delete()</button>
+                    </div>
+                </div>
+
+                <!-- Reverse -->
+                <div class="op-card" id="op-reverse">
+                    <div class="op-header" onclick="toggleOp('op-reverse')">
+                        <span class="op-badge sb">reverse()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Reverses the entire StringBuffer character sequence.</p>
+                        <button class="btn btn-sb" onclick="doReverse()">Run reverse()</button>
+                    </div>
+                </div>
+
+                <!-- Replace -->
+                <div class="op-card" id="op-replace">
+                    <div class="op-header" onclick="toggleOp('op-replace')">
+                        <span class="op-badge sb">replace()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Replaces characters from start to end with new text.</p>
+                        <div class="inline-row">
+                            <div class="form-group">
+                                <label>Start</label>
+                                <input type="number" id="replaceStart" class="input-field" value="6" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>End</label>
+                                <input type="number" id="replaceEnd" class="input-field" value="11" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Replacement</label>
+                            <input type="text" id="replaceValue" class="input-field" placeholder="e.g. Java" value="Java">
+                        </div>
+                        <button class="btn btn-sb" onclick="doReplace()">Run replace()</button>
+                    </div>
+                </div>
+
+                <!-- Length -->
+                <div class="op-card" id="op-length">
+                    <div class="op-header" onclick="toggleOp('op-length')">
+                        <span class="op-badge sb">length()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Returns the number of characters in the StringBuffer.</p>
+                        <button class="btn btn-sb" onclick="doLength()">Run length()</button>
+                    </div>
+                </div>
+
+                <!-- charAt -->
+                <div class="op-card" id="op-charat">
+                    <div class="op-header" onclick="toggleOp('op-charat')">
+                        <span class="op-badge sb">charAt()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Returns the character at the specified index.</p>
+                        <div class="form-group">
+                            <label>Index</label>
+                            <input type="number" id="charAtIndex" class="input-field" value="0" min="0">
+                        </div>
+                        <button class="btn btn-sb" onclick="doCharAt()">Run charAt()</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== STRINGTOKENIZER PANEL ===== -->
+            <div id="panelST" class="ops-panel hidden">
+                <div class="panel-title">StringTokenizer Operations</div>
+
+                <div class="form-group">
+                    <label for="stInput">Input String</label>
+                    <input type="text" id="stInput" class="input-field" placeholder="e.g. Hello World Java" value="Hello World Java PBL">
+                </div>
+                <div class="form-group">
+                    <label for="stDelimiter">Delimiter <span class="hint">(default: space)</span></label>
+                    <input type="text" id="stDelimiter" class="input-field" placeholder="e.g.  or , or ;" value=" ">
+                </div>
+
+                <!-- Tokenize -->
+                <div class="op-card" id="op-tokenize">
+                    <div class="op-header" onclick="toggleOp('op-tokenize')">
+                        <span class="op-badge st">tokenize()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Splits the string using the delimiter. Iterates with <code>hasMoreTokens()</code> + <code>nextToken()</code>.</p>
+                        <button class="btn btn-st" onclick="doTokenize()">Run Tokenize</button>
+                    </div>
+                </div>
+
+                <!-- Count -->
+                <div class="op-card" id="op-count">
+                    <div class="op-header" onclick="toggleOp('op-count')">
+                        <span class="op-badge st">countTokens()</span>
+                        <span class="op-toggle">▼</span>
+                    </div>
+                    <div class="op-body">
+                        <p class="op-desc">Counts tokens without consuming them from the tokenizer.</p>
+                        <button class="btn btn-st" onclick="doCountTokens()">Run countTokens()</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===== RIGHT COLUMN ===== -->
+        <main class="content">
+
+            <!-- Result Display -->
+            <section class="result-section">
+                <div class="section-header">
+                    <h2>⚡ Live Result</h2>
+                    <span class="result-type-badge" id="resultTypeBadge">—</span>
+                </div>
+
+                <div class="result-card" id="resultCard">
+                    <div class="result-placeholder">
+                        <span>🎯</span>
+                        <p>Run any operation to see the result here in real-time</p>
+                    </div>
+                </div>
+
+                <!-- Token Visualization (shown only for tokenizer) -->
+                <div id="tokenViz" class="token-viz hidden">
+                    <div class="token-viz-label">Tokens:</div>
+                    <div class="token-chips" id="tokenChips"></div>
+                </div>
+            </section>
+
+            <!-- Code Snippet -->
+            <section class="code-section">
+                <div class="section-header">
+                    <h2>📄 Java Code Equivalent</h2>
+                </div>
+                <pre class="code-block" id="codeSnippet"><span class="code-comment">// Run an operation to see the Java code equivalent here</span></pre>
+            </section>
+
+            <!-- Concept Info -->
+            <section class="info-section">
+                <h2>💡 Key Concepts</h2>
+                <div class="info-grid">
+                    <div class="info-card stringbuffer">
+                        <h3>StringBuffer</h3>
+                        <ul>
+                            <li><code>append(str)</code> — Add to end</li>
+                            <li><code>insert(i, str)</code> — Insert at index</li>
+                            <li><code>delete(s, e)</code> — Remove range</li>
+                            <li><code>reverse()</code> — Flip characters</li>
+                            <li><code>replace(s, e, str)</code> — Overwrite range</li>
+                            <li><code>charAt(i)</code> — Get char at index</li>
+                            <li><code>length()</code> — Size of buffer</li>
+                        </ul>
+                        <div class="info-note">✅ Mutable &amp; Thread-Safe</div>
+                    </div>
+                    <div class="info-card tokenizer">
+                        <h3>StringTokenizer</h3>
+                        <ul>
+                            <li><code>new StringTokenizer(str, delim)</code></li>
+                            <li><code>hasMoreTokens()</code> — Check if more exist</li>
+                            <li><code>nextToken()</code> — Get next token</li>
+                            <li><code>countTokens()</code> — Count remaining</li>
+                        </ul>
+                        <div class="info-note">⚡ Faster than split() for simple cases</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Activity Log -->
+            <section class="log-section">
+                <div class="section-header">
+                    <h2>📋 Operation History</h2>
+                    <button class="btn-clear" onclick="clearLogs()">🗑️ Clear</button>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry system">System ready — perform an operation to begin</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>String Processing Application &mdash; Built with Java Spring Boot + WebSocket + Thymeleaf &nbsp;|&nbsp; Unit II PBL Demo</p>
+    </footer>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
